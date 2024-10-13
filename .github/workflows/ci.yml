@@ -44,9 +44,10 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./android/gradlew
 
-      - name: Build Android APK
+      - name: Clean and Build Android APK
         run: |
           cd android
+          ./gradlew clean
           ./gradlew assembleRelease
 
       - name: Upload APK Release - ${{ inputs.app_name }}
