@@ -7,6 +7,7 @@
 import {SafeAreaView, Text} from 'react-native';
 
 function App(): React.JSX.Element {
+  console.log('env', process.env.app_name, process.env.MY_VARIABLE);
   return (
     <SafeAreaView
       style={{
@@ -16,7 +17,7 @@ function App(): React.JSX.Element {
         justifyContent: 'center',
       }}>
       <Text style={{fontWeight: 'bold', fontSize: 24, textAlign: 'center'}}>
-        This is confing for {process.env.MY_VARIABLE}
+        This is the configuration for {process.env.app_name}
       </Text>
     </SafeAreaView>
   );

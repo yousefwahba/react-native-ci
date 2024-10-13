@@ -1,10 +1,10 @@
-name: React Native Build with Dynamic .env
+name: Build Android App
 
 on:
   workflow_dispatch:
     inputs:
-      MY_VARIABLE:
-        description: 'Environment variable for the app'
+      app_name:
+        description: 'Name of the app'
         required: true
 
 jobs:
@@ -12,26 +12,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Set current date as env variable
+        run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Set app name as env variable
+        run: echo "APP_NAME=${{ inputs.app_name }}" >> $GITHUB_ENV
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
         with:
-          node-version: '16'
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install
 
-      # Create the .env file dynamically
-      - name: Create .env file
+      - name: Add app name to .env
+        run: echo "app_name=${{ inputs.app_name }}" >> .env
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Build Android APK
         run: |
-          echo "MY_VARIABLE=${{ github.event.inputs.MY_VARIABLE }}" > .env
-        shell: bash
+          cd android
+          ./gradlew assembleRelease
 
-      # Verify that .env is created
-      - name: Check .env file
-        run: cat .env
-
-      - name: Build the app
-        run: npm run build
+      - name: Upload APK Release - ${{ inputs.app_name }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.app_name }} - ${{ env.date_today }} - APK(s) release generated
+          path: android/app/build/outputs/apk/release/
